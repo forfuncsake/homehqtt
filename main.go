@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/yosssi/gmq/mqtt/client"
 )
@@ -50,10 +51,12 @@ func main() {
 		devices:    make(map[string]*LCGW),
 		mqttClient: mqttClient,
 		mqttConnOpts: &client.ConnectOptions{
-			Network:   u.Scheme,
-			Address:   u.Host,
-			ClientID:  []byte("homehqtt"),
-			KeepAlive: 30,
+			Network:         u.Scheme,
+			Address:         u.Host,
+			ClientID:        []byte("homehqtt"),
+			KeepAlive:       30,
+			CONNACKTimeout:  5 * time.Second,
+			PINGRESPTimeout: 5 * time.Second,
 		},
 		mqttRetries: 5,
 		mqttTopic:   *topic,

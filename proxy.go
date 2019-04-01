@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -35,6 +36,7 @@ type proxy struct {
 func (p *proxy) Run() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", p.mitm)
+	mux.HandleFunc("/debug", p.debug)
 
 	srv := &http.Server{
 		Addr:    ":8443",
@@ -48,6 +50,24 @@ func (p *proxy) Run() {
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 	log.Fatal(srv.ListenAndServeTLS(p.cert, p.key))
+}
+
+func (p *proxy) debug(w http.ResponseWriter, req *http.Request) {
+	d := struct {
+		Devices       map[string]*LCGW
+		NumGoRoutines int
+	}{
+		p.devices,
+		runtime.NumGoroutine(),
+	}
+
+	b, err := json.Marshal(&d)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
 }
 
 func (p *proxy) mitm(w http.ResponseWriter, req *http.Request) {
