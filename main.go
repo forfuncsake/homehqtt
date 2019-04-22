@@ -35,7 +35,7 @@ func main() {
 	}
 
 	mqttClient := client.New(&client.Options{
-		ErrorHandler: func(err error) { log.Println(err) },
+		ErrorHandler: func(err error) { log.Println("mqttclient:", err) },
 	})
 	// Terminate the Client.
 	defer mqttClient.Terminate()
